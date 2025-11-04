@@ -151,7 +151,14 @@ Representa gráficamente la curva de notas de la asignatura ALG estimando la dis
   - Compara el resultado con la media de las notas para esa asignatura. Puedes marcar dicha media en el gráfico con `geom_point` o con `geom_vline()` especificando el parámetro `xintercept`.
 
 ```{r Solucion_Ej4, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
-
+datos %>%
+  pivot_longer(cols=ends_with('.num'), names_to='asignatura', values_to = 'valor') %>%
+  filter(asignatura=="ALG.num") %>%
+  ggplot(aes(valor)) +
+  geom_histogram(aes(y=stat(density))) +
+  geom_density() +
+  geom_vline(aes(xintercept = mean(valor, na.rm=T)), color = "blue", linetype = "dashed", size = 1)
+  
 
 ```
 
@@ -160,6 +167,14 @@ Representa gráficamente la curva de notas de la asignatura ALG estimando la dis
 Compara la distribución de probabilidad de las notas de la asignatura ANM con la de una Gaussiana empleando la función `qqPlot` (quantile-quantile plot) de la librería `car`, que representa gráficamente los cuantiles de la distribución analizada respecto de los de una distribución normal (Gaussiana).
 
 ```{r Solucion_Ej5, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
+library(tidyverse)
+library(car)
+
+valores <- datos %>%
+  pivot_longer(cols = ends_with('.num'), names_to='asignatura', values_to='valor') %>%
+  filter(asignatura == "ANM.num")
+
+qqPlot(valores$valor)
 
 ```
 
@@ -175,6 +190,16 @@ Vamos a calcular la frecuencia de cada valor en las variables categóricas de ca
 
 ```{r Solucion_Ej6, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
 
+frecuencia_ALG <- table(datos$ALG.cat)
+frecuencia_ALG
+tabla_contingencia <- table(datos$ALG.cat, datos$ANM.cat)
+tabla_contingencia
+
+mosaicplot(tabla_contingencia,
+           color = TRUE,
+           main = "Tabla de contingencia ALG vs ANM",
+           xlab = "ALG",
+           ylab = "ANM")
 
 ```
 
@@ -187,6 +212,13 @@ Vamos a calcular la frecuencia de cada valor en las variables categóricas de ca
 
 ```{r Solucion_Ej7, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
 
+datos %>%
+  select(ends_with('.num')) %>%
+  cor(use="complete.obs", method="pearson")
+
+datos %>%
+  select(ends_with('.num')) %>%
+  cor(use="complete.obs", method="spearman")
 ```
 
 La correlación de Pearson sirve para cuando la relación entre dos variables es lineal, mientras que la de Spearman es robusta frente a relaciones no lineales en datos ordenados.
@@ -197,6 +229,23 @@ Para comprobarlo, vamos a aplicar una función no lineal a una de las variables 
 
 ```{r Solucion_Ej7 bis, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
 
+
+datos %>%
+  select(ends_with('.num')) %>%
+  mutate(ALG_sqrt = sqrt(ALG.num)) %>%
+  summarise(
+    pearson_sqrt = cor(ALG_sqrt, MD.num, method = "pearson"),
+    spearman_sqrt = cor(ALG_sqrt, MD.num, method = "spearman")
+  )
+
+# Correlación con sqrt(ALG.num)
+cor_pearson_sqrt <- cor(sqrt(datos$ALG.num), datos$MD.num, method = "pearson")
+cor_spearman_sqrt <- cor(sqrt(datos$ALG.num), datos$MD.num, method = "spearman")
+
+cor_pearson_sqrt
+cor_spearman_sqrt
+
+
 ```
 
 ## Ejercicio 8: Representación gráfica de correlación entre variables
@@ -205,6 +254,33 @@ Dibuja las matrices de correlación del conjunto de notas numéricas.
 Podemos usar `pairs` del paquete base o bien `ggcorr` y `ggpairs` de la librería `GGally`.
 
 ```{r Solucion_Ej8, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
+library(tidyverse)
+library(GGally)
+
+# Seleccionar solo las columnas numéricas de notas
+notas <- datos %>% select(ends_with(".num"))
+
+# 1. Matriz de covarianza (no acotada)
+covarianza <- cov(notas, use = "complete.obs")
+print("Matriz de covarianza:")
+print(covarianza)
+
+# 2. Matriz de correlación de Pearson (lineal)
+cor_pearson <- cor(notas, use = "complete.obs", method = "pearson")
+print("Matriz de correlación de Pearson:")
+print(cor_pearson)
+
+# 3. Matriz de correlación de Spearman (rangos)
+cor_spearman <- cor(notas, use = "complete.obs", method = "spearman")
+print("Matriz de correlación de Spearman:")
+print(cor_spearman)
+
+# 4. Visualización con pairs() (base R)
+pairs(notas, main = "Matriz de dispersión (pairs)")
+
+# 5. Visualización con ggpairs() (GGally)
+ggpairs(notas, title = "Matriz de correlación con GGally")
+
 
 ```
 
