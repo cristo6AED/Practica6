@@ -297,10 +297,24 @@ Nota: usa la función `chisq.test` con el parámetro `correct=FALSE` y analiza s
 
 ```{r Solucion_Ej9, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
 
+# Tabla de contingencia
+tabla_alg_anm <- table(datos$ALG.cat, datos$ANM.cat)
+
+# Test Chi-cuadrado de Pearson
+chi_alg_anm <- chisq.test(tabla_alg_anm, correct = FALSE)
+chi_alg_anm
+
+
 ```
 
 
 ```{r Solucion_Ej9b, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
+# Tabla de contingencia
+tabla_alg_sex <- table(datos$ALG.cat, datos$Sex)
+
+# Test Chi-cuadrado de Pearson
+chi_alg_sex <- chisq.test(tabla_alg_sex, correct = FALSE)
+chi_alg_sex
 
 ```
 
